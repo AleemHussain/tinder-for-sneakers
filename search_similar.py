@@ -1,52 +1,41 @@
-from annoy import AnnoyIndex
+import open_clip
+from PIL import Image
+import torch
 import numpy as np
 import os
-import sys
-from encode_images import get_embedding
+from annoy import AnnoyIndex
+import matplotlib.pyplot as plt
 
-# Configuration
-embedding_dim = 512
-index_path = "annoy_index/fashion.ann"
-id_map_path = "annoy_index/id_map.txt"
+# Load model and preprocessing
+model, _, preprocess = open_clip.create_model_and_transforms(
+    model_name="ViT-B-32",
+    pretrained="laion2b_s34b_b79k"
+)
+model.eval()
 
-# Ensure image path is provided as argument
-if len(sys.argv) < 2:
-    print("[!] Please provide an image path. Example:")
-    print("    python search_similar.py data/your_image.jpg")
-    sys.exit(1)
+# Load query image
+query_path = "query/test_shoe6.jpg"
+image = preprocess(Image.open(query_path).convert("RGB")).unsqueeze(0)
+with torch.no_grad():
+    query_embedding = model.encode_image(image).cpu().numpy()[0]
 
-image_path = sys.argv[1]
+# Load index and filename mapping
+index = AnnoyIndex(512, "angular")
+index.load("shoe_index.ann")
+id_to_filename = np.load("id_to_filename.npy", allow_pickle=True)
 
-# Check if file exists
-if not os.path.isfile(image_path):
-    print(f"[!] Image not found: {image_path}")
-    sys.exit(1)
-
-# Load Annoy index
-index = AnnoyIndex(embedding_dim, 'angular')
-if not os.path.exists(index_path):
-    print(f"[!] Annoy index not found at: {index_path}")
-    sys.exit(1)
-index.load(index_path)
-
-# Generate embedding for input image
-query_vector = get_embedding(image_path)
-
-# Find top 5 similar items
-ids, dists = index.get_nns_by_vector(query_vector, 5, include_distances=True)
-
-# Load ID map
-if not os.path.exists(id_map_path):
-    print(f"[!] ID map not found at: {id_map_path}")
-    sys.exit(1)
-
-id_map = {}
-with open(id_map_path, "r") as f:
-    for line in f:
-        idx, name = line.strip().split(",")
-        id_map[int(idx)] = name
+# Search for similar images
+top_k = 5
+indices = index.get_nns_by_vector(query_embedding, top_k)
 
 # Display results
-print("\nSimilar images:")
-for idx, dist in zip(ids, dists):
-    print(f"- {id_map[idx]} (distance: {dist:.4f})")
+fig, axs = plt.subplots(1, top_k, figsize=(15, 5))
+for i, idx in enumerate(indices):
+    img_path = os.path.join("shoes", id_to_filename[idx])
+    img = Image.open(img_path)
+    axs[i].imshow(img)
+    axs[i].axis("off")
+    axs[i].set_title(f"Result {i+1}")
+plt.suptitle("Most Similar Sneakers", fontsize=16)
+plt.tight_layout()
+plt.show()

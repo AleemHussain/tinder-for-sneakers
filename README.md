@@ -1,25 +1,44 @@
-# Tinder-for-Sneakers
+# Tinder-for-Sneakers (OpenCLIP Version)
 
-A prototype for a swipe-based sneaker recommendation system. Inspired by the user experience of TikTok and Tinder, users can explore sneaker options quickly by swiping through images — finding the right pair in just a few interactions.
+A prototype for a swipe-based sneaker recommendation system. Inspired by TikTok and Tinder, users can explore sneaker options quickly by swiping through images — finding the right pair in just a few interactions.
 
-This project uses **FashionCLIP** to convert sneaker images into embeddings and **Annoy** for fast similarity search in the vector space. The image data comes from a publicly available **Kaggle dataset**.
-
----
-
-## 📄 Documentation
-
-You can find the original conceptual summary of the project (in German) here:
-
-📘 [Bildbasiertes Empfehlungssystem mit FashionCLIP (PDF)](Bildbasiertes_Empfehlungssystem_mit_FashionCLIP.pdf)
+This project uses **OpenCLIP** to embed sneaker images and **Annoy** to search for similar styles in a high-dimensional vector space. The sneaker images come from a public Kaggle dataset.
 
 ---
 
 ## 📁 Dataset Used
 
-We use the following sneaker dataset from Kaggle:  
-**[Nike, Adidas & Converse Image Dataset](https://www.kaggle.com/datasets/die9origephit/nike-adidas-and-converse-imaged)**
+We use this sneaker dataset from Kaggle:
+👉 **[Nike, Adidas &amp; Converse Image Dataset](https://www.kaggle.com/datasets/die9origephit/nike-adidas-and-converse-imaged)**
 
-It includes sneaker images from well-known brands like Nike, Adidas, and Converse.
+The images are manually extracted and placed into the `shoes/` folder.
+
+---
+
+## 📄 Documentation
+
+Concept and design are documented in German in the following file:
+📘 [Bildbasiertes Empfehlungssystem mit FashionCLIP (PDF)](Bildbasiertes_Empfehlungssystem_mit_FashionCLIP.pdf)
+
+---
+
+## 📂 Folder Structure
+
+```
+TFS/
+├── shoes/                   # Sneaker database (from Kaggle dataset)
+├── query/                   # Image to search with
+│   └── test_shoe.jpg        # Already given some images to test with
+│
+├── build_index.py           # Embeds all shoes and builds Annoy index
+├── search_similar.py        # Finds similar shoes from query image
+│
+├── shoe_index.ann           # Generated Annoy index (auto)
+├── id_to_filename.npy       # Mapping of image filenames (auto)
+├── .gitignore
+├── requirements.txt
+├── README.md
+```
 
 ---
 
@@ -31,9 +50,9 @@ cd tinder-for-sneakers
 ```
 
 ```bash
-# (Optional) Create and activate a Python virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+# (Optional) Create a Conda environment
+conda create -n sneakerclip python=3.10 -y
+conda activate sneakerclip
 ```
 
 ```bash
@@ -41,78 +60,45 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Prerequisites
-
-- A valid Kaggle API key (`kaggle.json`) is required.  
-  [Get it from your Kaggle account](https://www.kaggle.com/account) and place it in `~/.kaggle/kaggle.json`.
-
 ---
 
-## 🚀 How to Run
+## 🚀 How to Use
 
-### 1. Download images and create embeddings
+### 1. Add your images
 
-```bash
-python encode_images.py
-```
+- All reference sneaker images go into `shoes/`
+- Your query image goes into `query/` (e.g. `test_shoe.jpg`)
 
-This script:
-- Automatically downloads the Kaggle dataset
-- Converts and saves images into the `data/` directory (as `.jpg`)
-- Extracts image embeddings using FashionCLIP
-- Saves them in the `embeddings/` directory
-
-### 2. Build the Annoy index
+### 2. Build the index
 
 ```bash
 python build_index.py
 ```
 
-This creates an Annoy index from the image embeddings and stores it in `annoy_index/fashion.ann`.
-
-### 3. Search for similar images (Example)
+### 3. Search for similar sneakers
 
 ```bash
-python search_similar.py "test_images/converse/1.jpg"
+python search_similar.py
 ```
 
-This returns the top 5 most similar sneaker images based on the input image.
+This will:
+
+- Embed your query image
+- Retrieve the 5 most similar sneakers using Annoy
+- Display them side-by-side with `matplotlib`
 
 ---
 
 ## 🧠 Technologies Used
 
-- [HuggingFace Transformers](https://huggingface.co) — using `patrickjohncyh/fashion-clip`
-- [Annoy](https://github.com/spotify/annoy) — for fast approximate nearest neighbor search
-- [KaggleHub](https://github.com/ishant1609/KaggleHub) — for automatic dataset download
+- [OpenCLIP](https://github.com/mlfoundations/open_clip)
+- [Annoy](https://github.com/spotify/annoy)
+- [Pillow](https://pillow.readthedocs.io/)
 - Python 3.10+
-
----
-
-## 📂 Project Structure
-
-```
-tinder-for-sneakers/
-├── data/                  # Raw images (from Kaggle)
-├── embeddings/            # Saved image embeddings (.npy)
-├── annoy_index/           # Annoy index files (.ann) + ID map
-├── test_images/           # Custom test images (e.g., your own sneaker)
-│   ├── adidas/
-│   ├── converse/
-│   ├── nike/
-│ 
-├── encode_images.py       # Kaggle download + image conversion + embedding
-├── build_index.py         # Build Annoy index from embeddings
-├── search_similar.py      # Find similar images based on input
-│
-├── README.md              # Project description & instructions
-├── requirements.txt       # Dependencies
-├── .gitignore             # Ignored files/folders
-```
 
 ---
 
 ## 📄 License
 
-For research and prototyping purposes only.  
-Data usage subject to the license of the referenced Kaggle dataset.
+This project is for research and prototyping only.
+All image content is based on the [referenced Kaggle dataset](https://www.kaggle.com/datasets/die9origephit/nike-adidas-and-converse-imaged).
