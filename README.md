@@ -15,17 +15,10 @@ The images are manually extracted and placed into the `shoes/` folder.
 
 ---
 
-## 📄 Documentation
-
-Concept and design are documented in German in the following file:
-📘 [Bildbasiertes Empfehlungssystem mit FashionCLIP (PDF)](Bildbasiertes_Empfehlungssystem_mit_FashionCLIP.pdf)
-
----
-
 ## 📂 Folder Structure
 
 ```
-TFS/
+tinder-for-sneakers/
 ├── shoes/                   # Sneaker database (from Kaggle dataset)
 ├── query/                   # Image to search with
 │   └── test_shoe.jpg        # Already given some images to test with
