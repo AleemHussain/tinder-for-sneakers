@@ -2,7 +2,8 @@
 
 A prototype for a swipe-based sneaker recommendation system. Inspired by the user experience of TikTok and Tinder, users can explore sneaker options quickly by swiping through images — finding the right pair in just a few interactions.
 
-This project uses **FashionCLIP** to convert sneaker images and text descriptions into embeddings, and **Annoy** for fast similarity search in the vector space. Users can search using an image, a natural language description, or a combination of both.
+This project uses **FashionCLIP** to convert sneaker images and text descriptions into embeddings, and **Annoy** for fast similarity search in the vector space.  
+It also integrates a **SQLite database** to store sneaker metadata (filename, brand, color, description) and allows enhanced display during search.
 
 ---
 
@@ -45,44 +46,47 @@ pip install -r requirements.txt
 
 ## 🚀 How to Run
 
-### 1. Download images and create embeddings
+### 1. Generate image embeddings and build search index
 
 ```bash
 python build_index.py
 ```
 
-This script:
+This script will:
 
-* Extracts image embeddings using FashionCLIP
-* Creates an Annoy index for fast similarity search
+* Extract image embeddings using FashionCLIP
+* Store them in an Annoy index (`shoe_index.ann`)
+* Save a filename mapping (`id_to_filename.npy`)
+* Store sneaker metadata in a local SQLite database (`sneakers.db`)
 
 ### 2. Search by image, text, or both
 
-Edit and run:
+Configure and run:
 
 ```bash
 python search_similar.py
 ```
 
-You can configure:
+You can set:
 
-* `query_path`: path to a sneaker image (e.g. `query/test_shoe1.jpg`)
+* `query_path`: path to an input sneaker image (e.g. `query/test_shoe1.jpg`)
 * `text_prompt`: a natural language query (e.g. `"white sneaker with red sole"`)
-* `alpha`: how to balance image vs. text (e.g. `0.5` for equal weight)
+* `alpha`: weight between image and text (e.g. `0.5` = 50/50)
 
 The script will:
 
-* Generate image and/or text embeddings
-* Combine them (if both provided)
-* Retrieve the most similar sneakers
-* Display them side-by-side with `matplotlib`
+* Compute image/text embeddings
+* Search nearest matches using Annoy
+* Load metadata from the database
+* Display results with image and description using `matplotlib`
 
 ---
 
 ## 🧠 Technologies Used
 
-* [HuggingFace Transformers](https://huggingface.co) — using `patrickjohncyh/fashion-clip`
-* [Annoy](https://github.com/spotify/annoy) — for fast approximate nearest neighbor search
+* [HuggingFace Transformers](https://huggingface.co) — `patrickjohncyh/fashion-clip`
+* [Annoy (Spotify)](https://github.com/spotify/annoy) — Fast vector search
+* [SQLite3](https://www.sqlite.org/index.html) — Lightweight metadata database
 * Python 3.10+
 
 ---
@@ -91,15 +95,17 @@ The script will:
 
 ```
 tinder-for-sneakers/
-├── shoes/                   # Sneaker image database (from Kaggle dataset)
-├── query/                   # Images to test queries with
-│   └── test_shoe1.jpg       # Example input image
+├── shoes/                   # Sneaker image dataset
+├── query/                   # Example input queries
+│   └── test_shoe1.jpg
 │
-├── build_index.py           # Extracts embeddings and builds Annoy index
-├── search_similar.py        # Performs image/text/mixed search
+├── build_index.py           # Builds Annoy index + DB
+├── search_similar.py        # Performs similarity search
+├── db.py                    # SQLite helper functions
 │
 ├── shoe_index.ann           # Saved Annoy index (auto-generated)
-├── id_to_filename.npy       # Mapping of Annoy index IDs to filenames
+├── id_to_filename.npy       # Filename mapping (auto-generated)
+├── sneakers.db              # SQLite DB with sneaker metadata
 ├── requirements.txt
 ├── README.md
 ```
