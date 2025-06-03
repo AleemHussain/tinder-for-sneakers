@@ -4,13 +4,14 @@ import torch
 import os
 import numpy as np
 from annoy import AnnoyIndex
+from db import init_db, insert_sneaker
 
-# Lade FashionCLIP
+# Load FashionCLIP
 model = CLIPModel.from_pretrained("patrickjohncyh/fashion-clip")
 processor = CLIPProcessor.from_pretrained("patrickjohncyh/fashion-clip")
 model.eval()
 
-# Bildverzeichnis und Annoy-Index vorbereiten
+# Prepare image directory and Annoy index
 image_dir = "shoes"
 embedding_dim = 512
 index = AnnoyIndex(embedding_dim, "angular")
@@ -18,6 +19,10 @@ id_to_filename = []
 
 valid_ext = [".jpg", ".jpeg", ".png"]
 
+# Initialize database
+init_db()
+
+# Process images: embed, index, and insert metadata into database
 for idx, filename in enumerate(os.listdir(image_dir)):
     if not any(filename.lower().endswith(ext) for ext in valid_ext):
         continue
@@ -31,7 +36,15 @@ for idx, filename in enumerate(os.listdir(image_dir)):
     index.add_item(idx, embedding)
     id_to_filename.append(filename)
 
-# Index speichern
+    # Prepare metadata (placeholder)
+    brand = "unknown"
+    color = "unknown"
+    description = filename.replace("_", " ").split(".")[0]
+
+    # Insert into database
+    insert_sneaker(filename, brand, color, description, idx)
+
+# Save Annoy index and filename mapping
 index.build(10)
 index.save("shoe_index.ann")
 np.save("id_to_filename.npy", id_to_filename)

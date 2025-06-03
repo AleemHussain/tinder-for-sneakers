@@ -14,30 +14,22 @@ __pycache__/
 venv/
 env/
 
-# Modelle / Checkpoints (nicht genutzt, aber vorbeugend)
+# Model checkpoints (not currently used, but just in case)
 *.ckpt
 *.pt
 *.h5
 *.safetensors
 
-# Embedding-Daten (werden automatisch generiert)
-embeddings/
+# Embedding data and Annoy index (auto-generated)
 *.npy
-
-# Annoy-Index
-annoy_index/
 *.ann
-annoy_index/id_map.txt
+sneakers.db
 
-# Rohbilder (automatisch geladen)
-data/*.png
-data/*.jpg
-data/*.jpeg
 
-# Ausnahme für ggf. manuelle Beispielbilder (optional)
+# Exceptions for manually added example images (optional)
 !docs/images/*.png
 !docs/images/*.jpg
 
-# System-Dateien
+# System files
 .DS_Store
 Thumbs.db
